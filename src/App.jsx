@@ -53,13 +53,7 @@ export default function App() {
     storedAuth?.section || "transport"
   );
   const [items, setItems] = useState([]);
-  const [omborItems, setOmborItems] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("temir_ombor_items") || "[]");
-    } catch {
-      return [];
-    }
-  });
+  const [omborItems, setOmborItems] = useState([]);
   const [stats, setStats] = useState({
     totalTrips: 0,
     totalGrossWeight: 0,
@@ -110,15 +104,58 @@ export default function App() {
     }
   }
 
+  async function loadOmborData() {
+    setLoading(true);
+    try {
+      const omborRes = await fetch(`${API_URL}/api/ombor`);
+      const serverItems = await omborRes.json();
+
+      if (serverItems.length === 0) {
+        try {
+          const legacyItems = JSON.parse(
+            localStorage.getItem("temir_ombor_items") || "[]"
+          );
+
+          if (legacyItems.length > 0) {
+            for (const item of legacyItems) {
+              const payload = {
+                stock_date: item.stock_date,
+                product_name: item.product_name,
+                incoming_kg: Number(item.incoming_kg || 0),
+                outgoing_kg: Number(item.outgoing_kg || 0),
+                unit_price: Number(item.unit_price || 0),
+              };
+
+              await fetch(`${API_URL}/api/ombor`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+            }
+
+            localStorage.removeItem("temir_ombor_items");
+            const refillRes = await fetch(`${API_URL}/api/ombor`);
+            setOmborItems(await refillRes.json());
+            return;
+          }
+        } catch {
+          // Ignore malformed legacy cache and use the server data.
+        }
+      }
+
+      setOmborItems(serverItems);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (isAuthed && activeSection === "transport") {
       loadData();
+    } else if (isAuthed && activeSection === "ombor") {
+      loadOmborData();
     }
   }, [isAuthed, activeSection]);
-
-  useEffect(() => {
-    localStorage.setItem("temir_ombor_items", JSON.stringify(omborItems));
-  }, [omborItems]);
 
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -244,7 +281,7 @@ export default function App() {
   }
 
   const handleOmborEdit = (item) => {
-    setOmborEditingId(item.id);
+    setOmborEditingId(item._id);
     setOmborForm({
       stock_date: item.stock_date,
       product_name: item.product_name || "",
@@ -255,15 +292,23 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleOmborDelete = (id) => {
-    setOmborItems((prev) => prev.filter((item) => item.id !== id));
+  async function handleOmborDelete(id) {
+    const response = await fetch(`${API_URL}/api/ombor/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      alert(error.message || "Delete failed");
+      return;
+    }
+    await loadOmborData();
     if (omborEditingId === id) resetOmborForm();
-  };
+  }
 
   function requestDeleteOmbor(item) {
     setDeleteTarget({
       kind: "ombor",
-      id: item.id,
+      id: item._id,
       title: item.product_name || "Tanlangan ombor yozuvi",
     });
   }
@@ -279,33 +324,49 @@ export default function App() {
       return;
     }
 
-    handleOmborDelete(currentTarget.id);
+    await handleOmborDelete(currentTarget.id);
   }
 
-  const handleOmborSubmit = (e) => {
+  const handleOmborSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      id: omborEditingId || crypto.randomUUID(),
-      stock_date: new Date(omborForm.stock_date).toISOString(),
-      product_name: omborForm.product_name.trim(),
-      incoming_kg: Number(omborForm.incoming_kg),
-      outgoing_kg: Number(omborForm.outgoing_kg),
-      unit_price: Number(omborForm.unit_price),
-    };
+    setSaving(true);
+    try {
+      const payload = {
+        stock_date: new Date(omborForm.stock_date).toISOString(),
+        product_name: omborForm.product_name.trim(),
+        incoming_kg: Number(omborForm.incoming_kg),
+        outgoing_kg: Number(omborForm.outgoing_kg),
+        unit_price: Number(omborForm.unit_price),
+      };
 
-    if (!payload.product_name) {
-      alert("Mahsulot nomi kerak");
-      return;
+      if (!payload.product_name) {
+        alert("Mahsulot nomi kerak");
+        return;
+      }
+
+      const url = omborEditingId
+        ? `${API_URL}/api/ombor/${omborEditingId}`
+        : `${API_URL}/api/ombor`;
+      const method = omborEditingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Save failed");
+      }
+
+      resetOmborForm();
+      await loadOmborData();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setSaving(false);
     }
-
-    setOmborItems((prev) => {
-      const next = omborEditingId
-        ? prev.map((item) => (item.id === omborEditingId ? payload : item))
-        : [payload, ...prev];
-      return next;
-    });
-
-    resetOmborForm();
   };
 
   const handleLogout = () => {
@@ -758,7 +819,7 @@ export default function App() {
                   {filteredOmborItems
                     .slice((omborPage - 1) * pageSize, omborPage * pageSize)
                     .map((item) => (
-                      <tr key={item.id}>
+                    <tr key={item._id}>
                         <td>{new Date(item.stock_date).toLocaleDateString()}</td>
                         <td>{item.product_name}</td>
                         <td>{money(item.incoming_kg)}</td>
@@ -773,7 +834,7 @@ export default function App() {
                             Edit
                           </button>
                           {deleteTarget?.kind === "ombor" &&
-                          deleteTarget.id === item.id ? (
+                          deleteTarget.id === item._id ? (
                             <>
                               <button
                                 type="button"

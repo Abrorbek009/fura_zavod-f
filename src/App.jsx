@@ -15,6 +15,7 @@ function getCurrentLocalDateValue() {
 const emptyForm = {
   transport_date: getCurrentLocalDateValue(),
   truck_number: "",
+  product_name: "",
   gross_weight_kg: "",
   tare_weight_kg: "",
   discount_kg: "",
@@ -180,6 +181,7 @@ export default function App() {
     if (isAuthed && activeSection === "transport") {
       loadData();
       loadVehicleData();
+      loadOmborData();
     } else if (isAuthed && activeSection === "vehicles") {
       loadVehicleData();
     } else if (isAuthed && activeSection === "ombor") {
@@ -231,6 +233,25 @@ export default function App() {
       String(a.truck_number).localeCompare(String(b.truck_number), "uz")
     );
   }, [vehicleItems, form.truck_number]);
+
+  const transportProductOptions = useMemo(() => {
+    const seen = new Set();
+    const options = [];
+
+    for (const item of omborItems) {
+      const productName = String(item.product_name || "").trim();
+      if (!productName || seen.has(productName)) continue;
+      seen.add(productName);
+      options.push(productName);
+    }
+
+    const currentProduct = String(form.product_name || "").trim();
+    if (currentProduct && !seen.has(currentProduct)) {
+      options.unshift(currentProduct);
+    }
+
+    return options.sort((a, b) => String(a).localeCompare(String(b), "uz"));
+  }, [omborItems, form.product_name]);
 
   const filteredOmborItems = useMemo(() => {
     const q = omborSearch.trim().toLowerCase();
@@ -297,6 +318,7 @@ export default function App() {
     setForm({
       transport_date: toLocalInputValue(item.transport_date),
       truck_number: item.truck_number || "",
+      product_name: item.product_name || "",
       gross_weight_kg: String(item.gross_weight_kg ?? ""),
       tare_weight_kg: String(item.tare_weight_kg ?? ""),
       discount_kg: String(item.discount_kg ?? ""),
@@ -312,6 +334,7 @@ export default function App() {
       const payload = {
         ...form,
         transport_date: toIsoFromDateInput(form.transport_date),
+        product_name: form.product_name.trim(),
         gross_weight_kg: Number(form.gross_weight_kg),
         tare_weight_kg: Number(form.tare_weight_kg),
         cargo_weight_kg: cargoWeight,
@@ -325,6 +348,11 @@ export default function App() {
 
       if (!selectedVehicle) {
         alert("Mashinani ro'yxatdan tanlang");
+        return;
+      }
+
+      if (!payload.product_name) {
+        alert("Mahsulotni ro'yxatdan tanlang");
         return;
       }
 
@@ -682,6 +710,7 @@ export default function App() {
           <div className="gridHeader">
             <div>Sana</div>
             <div>Moshina</div>
+            <div>Mahsulot</div>
             <div>Moshinani yuk bilan tola vazni</div>
             <div>Moshinani yuksiz vazni</div>
             <div>Moshinaga yuklangan yuk</div>
@@ -711,6 +740,22 @@ export default function App() {
               {transportVehicleOptions.map((vehicle) => (
                 <option key={vehicle._id} value={vehicle.truck_number}>
                   {vehicle.truck_number}
+                </option>
+              ))}
+            </select>
+            <select
+              value={form.product_name}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, product_name: e.target.value }))
+              }
+              required
+            >
+              <option value="" disabled>
+                Mahsulotni tanlang
+              </option>
+              {transportProductOptions.map((productName) => (
+                <option key={productName} value={productName}>
+                  {productName}
                 </option>
               ))}
             </select>
@@ -811,6 +856,7 @@ export default function App() {
                 <tr>
                   <th>Sana</th>
                   <th>Fura</th>
+                  <th>Mahsulot</th>
                   <th>Gross</th>
                   <th>Tara</th>
                   <th>Yuklangan yuk</th>
@@ -826,6 +872,7 @@ export default function App() {
                   <tr key={item._id}>
                     <td>{new Date(item.transport_date).toLocaleDateString()}</td>
                     <td>{item.truck_number}</td>
+                    <td>{item.product_name || "-"}</td>
                     <td>{money(item.gross_weight_kg)}</td>
                     <td>{money(item.tare_weight_kg)}</td>
                     <td>{money(item.cargo_weight_kg)}</td>
@@ -869,7 +916,7 @@ export default function App() {
                 ))}
                 {paginatedItems.length === 0 && (
                   <tr>
-                    <td colSpan="10" style={{ textAlign: "center", padding: 20 }}>
+                    <td colSpan="11" style={{ textAlign: "center", padding: 20 }}>
                       Hech qanday yozuv topilmadi
                     </td>
                   </tr>

@@ -179,6 +179,7 @@ export default function App() {
   useEffect(() => {
     if (isAuthed && activeSection === "transport") {
       loadData();
+      loadVehicleData();
     } else if (isAuthed && activeSection === "vehicles") {
       loadVehicleData();
     } else if (isAuthed && activeSection === "ombor") {
@@ -205,6 +206,31 @@ export default function App() {
         .some((value) => String(value).toLowerCase().includes(q))
     );
   }, [vehicleItems, vehicleSearch]);
+
+  const transportVehicleOptions = useMemo(() => {
+    const seen = new Set();
+    const options = [];
+
+    for (const vehicle of vehicleItems) {
+      const truckNumber = String(vehicle.truck_number || "").trim();
+      if (!truckNumber || seen.has(truckNumber)) continue;
+      seen.add(truckNumber);
+      options.push(vehicle);
+    }
+
+    const currentTruck = String(form.truck_number || "").trim();
+    if (currentTruck && !seen.has(currentTruck)) {
+      options.unshift({
+        _id: `current-${currentTruck}`,
+        truck_number: currentTruck,
+        owner_name: "",
+      });
+    }
+
+    return options.sort((a, b) =>
+      String(a.truck_number).localeCompare(String(b.truck_number), "uz")
+    );
+  }, [vehicleItems, form.truck_number]);
 
   const filteredOmborItems = useMemo(() => {
     const q = omborSearch.trim().toLowerCase();
@@ -292,6 +318,15 @@ export default function App() {
         discount_kg: Number(form.discount_kg),
         unit_price: Number(form.unit_price),
       };
+
+      const selectedVehicle = vehicleItems.find(
+        (item) => String(item.truck_number || "").trim() === payload.truck_number
+      );
+
+      if (!selectedVehicle) {
+        alert("Mashinani ro'yxatdan tanlang");
+        return;
+      }
 
       const url = editingId
         ? `${API_URL}/api/transports/${editingId}`
@@ -646,7 +681,7 @@ export default function App() {
         <form onSubmit={handleSubmit}>
           <div className="gridHeader">
             <div>Sana</div>
-            <div>Fura davlat raqami</div>
+            <div>Moshina</div>
             <div>Moshinani yuk bilan tola vazni</div>
             <div>Moshinani yuksiz vazni</div>
             <div>Moshinaga yuklangan yuk</div>
@@ -663,14 +698,23 @@ export default function App() {
                 setForm((p) => ({ ...p, transport_date: e.target.value }))
               }
             />
-            <input
+            <select
               value={form.truck_number}
               onChange={(e) =>
                 setForm((p) => ({ ...p, truck_number: e.target.value }))
               }
-              placeholder="50U109DB"
               required
-            />
+            >
+              <option value="" disabled>
+                Moshinani tanlang
+              </option>
+              {transportVehicleOptions.map((vehicle) => (
+                <option key={vehicle._id} value={vehicle.truck_number}>
+                  {vehicle.truck_number}
+                  {vehicle.owner_name ? ` - ${vehicle.owner_name}` : ""}
+                </option>
+              ))}
+            </select>
             <input
               type="number"
               value={form.gross_weight_kg}

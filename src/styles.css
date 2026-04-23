@@ -355,6 +355,66 @@ input {
   background: #fecaca;
 }
 
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 50;
+}
+
+.modalCard {
+  width: min(460px, 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #d8dee9;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.24);
+}
+
+.modalBadge {
+  display: inline-flex;
+  margin: 0 0 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.modalCard h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+
+.modalText {
+  margin: 0 0 18px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalDanger {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  color: #fff;
+  border-color: #dc2626;
+}
+
+.modalDanger:hover {
+  background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+}
+
 .loginPage {
   min-height: 100vh;
   display: grid;

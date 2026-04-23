@@ -80,6 +80,7 @@ export default function App() {
   const [omborSearch, setOmborSearch] = useState("");
   const [page, setPage] = useState(1);
   const [omborPage, setOmborPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const pageSize = 10;
 
   const gross = Number(form.gross_weight_kg || 0);
@@ -223,7 +224,6 @@ export default function App() {
   }
 
   async function handleDelete(id) {
-    if (!confirm("Ushbu yozuv o'chirilsinmi?")) return;
     const response = await fetch(`${API_URL}/api/transports/${id}`, {
       method: "DELETE",
     });
@@ -233,6 +233,14 @@ export default function App() {
       return;
     }
     await loadData();
+  }
+
+  function requestDeleteTransport(item) {
+    setDeleteTarget({
+      kind: "transport",
+      id: item._id,
+      title: item.truck_number || "Tanlangan yozuv",
+    });
   }
 
   const handleOmborEdit = (item) => {
@@ -248,10 +256,31 @@ export default function App() {
   };
 
   const handleOmborDelete = (id) => {
-    if (!confirm("Ushbu ombor yozuvi o'chirilsinmi?")) return;
     setOmborItems((prev) => prev.filter((item) => item.id !== id));
     if (omborEditingId === id) resetOmborForm();
   };
+
+  function requestDeleteOmbor(item) {
+    setDeleteTarget({
+      kind: "ombor",
+      id: item.id,
+      title: item.product_name || "Tanlangan ombor yozuvi",
+    });
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+
+    const currentTarget = deleteTarget;
+    setDeleteTarget(null);
+
+    if (currentTarget.kind === "transport") {
+      await handleDelete(currentTarget.id);
+      return;
+    }
+
+    handleOmborDelete(currentTarget.id);
+  }
 
   const handleOmborSubmit = (e) => {
     e.preventDefault();
@@ -519,7 +548,7 @@ export default function App() {
                       <button
                         type="button"
                         className="danger"
-                        onClick={() => handleDelete(item._id)}
+                        onClick={() => requestDeleteTransport(item)}
                       >
                         Delete
                       </button>
@@ -723,7 +752,7 @@ export default function App() {
                           <button type="button" onClick={() => handleOmborEdit(item)}>
                             Edit
                           </button>
-                          <button type="button" onClick={() => handleOmborDelete(item.id)}>
+                          <button type="button" onClick={() => requestDeleteOmbor(item)}>
                             Delete
                           </button>
                         </td>
@@ -734,6 +763,44 @@ export default function App() {
             </div>
           </section>
         </>
+      )}
+      {deleteTarget && (
+        <div
+          className="modalOverlay"
+          role="presentation"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="modalCard"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="modalBadge">Tasdiqlash</p>
+            <h2 id="delete-title">O'chirishni tasdiqlaysizmi?</h2>
+            <p className="modalText">
+              <strong>{deleteTarget.title}</strong> yozuvi o'chiriladi. Bu amalni
+              qaytarib bo'lmaydi.
+            </p>
+            <div className="modalActions">
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setDeleteTarget(null)}
+              >
+                Yo'q
+              </button>
+              <button
+                type="button"
+                className="danger modalDanger"
+                onClick={confirmDelete}
+              >
+                Ha, o'chir
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

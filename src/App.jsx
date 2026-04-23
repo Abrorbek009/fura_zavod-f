@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { RxDoubleArrowLeft, RxDoubleArrowRight } from "react-icons/rx";
 import Login from "./Login.jsx";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://fura-zavod-b-vhpt.vercel.app";
 
 function getCurrentLocalDateTime() {
   const now = new Date();

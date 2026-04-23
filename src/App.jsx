@@ -427,7 +427,7 @@ export default function App() {
           <strong>{money(stats.totalCargoWeight)}</strong>
         </div>
         <div className="statBox">
-          <span>Skintka kg</span>
+          <span>Skitka kg</span>
           <strong>{money(stats.totalDiscountWeight)}</strong>
         </div>
         <div className="statBox">
@@ -462,7 +462,7 @@ export default function App() {
             <div>Moshinani yuk bilan tola vazni</div>
             <div>Moshinani yuksiz vazni</div>
             <div>Moshinaga yuklangan yuk</div>
-            <div>Skintka</div>
+            <div>Skitka</div>
             <div>Jami yuk kg</div>
             <div>Yukni 1 kilo narxi</div>
           </div>
@@ -583,7 +583,7 @@ export default function App() {
                   <th>Gross</th>
                   <th>Tara</th>
                   <th>Yuklangan yuk</th>
-                  <th>Skintka</th>
+                  <th>Skitka</th>
                   <th>Netto</th>
                   <th>1 kg narx</th>
                   <th>Jami</th>

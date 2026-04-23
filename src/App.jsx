@@ -73,6 +73,7 @@ export default function App() {
   const [omborEditingId, setOmborEditingId] = useState(null);
   const [omborSearch, setOmborSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [vehiclePage, setVehiclePage] = useState(1);
   const [omborPage, setOmborPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const pageSize = 10;
@@ -150,7 +151,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (isAuthed && activeSection === "transport") {
+    if (isAuthed && (activeSection === "transport" || activeSection === "vehicles")) {
       loadData();
     } else if (isAuthed && activeSection === "ombor") {
       loadOmborData();
@@ -167,6 +168,40 @@ export default function App() {
     );
   }, [items, search]);
 
+  const vehicleRows = useMemo(() => {
+    const map = new Map();
+
+    for (const item of items) {
+      const truck = String(item.truck_number || "").trim();
+      if (!truck) continue;
+
+      const current = map.get(truck) || {
+        truck_number: truck,
+        trips: 0,
+        totalGrossWeight: 0,
+        totalCargoWeight: 0,
+        totalNetWeight: 0,
+        totalPrice: 0,
+        lastDate: null,
+      };
+
+      const transportDate = item.transport_date ? new Date(item.transport_date) : null;
+
+      current.trips += 1;
+      current.totalGrossWeight += Number(item.gross_weight_kg || 0);
+      current.totalCargoWeight += Number(item.cargo_weight_kg || 0);
+      current.totalNetWeight += Number(item.net_weight_kg || 0);
+      current.totalPrice += Number(item.total_price || 0);
+      if (!current.lastDate || (transportDate && transportDate > current.lastDate)) {
+        current.lastDate = transportDate;
+      }
+
+      map.set(truck, current);
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.trips - a.trips);
+  }, [items]);
+
   const filteredOmborItems = useMemo(() => {
     const q = omborSearch.trim().toLowerCase();
     if (!q) return omborItems;
@@ -177,9 +212,20 @@ export default function App() {
     );
   }, [omborItems, omborSearch]);
 
+  const totalVehiclePages = Math.max(Math.ceil(vehicleRows.length / pageSize), 1);
+  const currentVehiclePage = Math.min(vehiclePage, totalVehiclePages);
+  const paginatedVehicles = vehicleRows.slice(
+    (currentVehiclePage - 1) * pageSize,
+    currentVehiclePage * pageSize
+  );
+
   useEffect(() => {
     setPage(1);
   }, [search, items.length]);
+
+  useEffect(() => {
+    setVehiclePage(1);
+  }, [items.length]);
 
   useEffect(() => {
     setOmborPage(1);
@@ -392,20 +438,67 @@ export default function App() {
   }
 
   return (
-    <div className="appShell">
+    <div className="appShell appLayout">
+      <aside className="sideBar">
+        <div className="sideBrand">
+          <p>Temir Zavod</p>
+          <strong>Bo'limlar</strong>
+        </div>
+        <button
+          type="button"
+          className={activeSection === "transport" ? "sideBtn sideBtnActive" : "sideBtn"}
+          onClick={() => setActiveSection("transport")}
+        >
+          Kirim
+        </button>
+        <button
+          type="button"
+          className={activeSection === "vehicles" ? "sideBtn sideBtnActive" : "sideBtn"}
+          onClick={() => setActiveSection("vehicles")}
+        >
+          Moshinalar
+        </button>
+        <button
+          type="button"
+          className={activeSection === "ombor" ? "sideBtn sideBtnActive" : "sideBtn"}
+          onClick={() => setActiveSection("ombor")}
+        >
+          Ombor
+        </button>
+      </aside>
+
+      <main className="appMain">
       <header className="topbar">
         <div>
           <p className="topbarKicker">Temir Zavod</p>
-          <h1>{activeSection === "transport" ? "Fura kirim inputlari" : "Ombor bo'limi"}</h1>
+          <h1>
+            {activeSection === "transport"
+              ? "Fura kirim inputlari"
+              : activeSection === "vehicles"
+                ? "Moshinalar bo'limi"
+                : "Ombor bo'limi"}
+          </h1>
           <p className="topbarText">
             {activeSection === "transport"
               ? "Sana, fura raqami, yuk vazni va bir kilo narx bo'yicha kirim yuritish."
-              : "Ombor kirim/chiqim jurnalini yuritish."}
+              : activeSection === "vehicles"
+                ? "Barcha moshinalar bo'yicha yig'ma ma'lumotlar."
+                : "Ombor kirim/chiqim jurnalini yuritish."}
           </p>
         </div>
         <div className="topActions">
           {activeSection === "transport" && (
             <button className="refreshBtn" onClick={loadData} type="button">
+              Yangilash
+            </button>
+          )}
+          {activeSection === "vehicles" && (
+            <button className="refreshBtn" onClick={loadData} type="button">
+              Yangilash
+            </button>
+          )}
+          {activeSection === "ombor" && (
+            <button className="refreshBtn" onClick={loadOmborData} type="button">
               Yangilash
             </button>
           )}
@@ -651,6 +744,102 @@ export default function App() {
         </>
       )}
 
+      {activeSection === "vehicles" && (
+        <>
+          <section className="statsRow vehiclesStats">
+            <div className="statBox">
+              <span>Jami moshina</span>
+              <strong>{vehicleRows.length}</strong>
+            </div>
+            <div className="statBox">
+              <span>Jami reys</span>
+              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.trips, 0))}</strong>
+            </div>
+            <div className="statBox">
+              <span>Jami gross</span>
+              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalGrossWeight, 0))}</strong>
+            </div>
+            <div className="statBox">
+              <span>Jami yuk</span>
+              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalCargoWeight, 0))}</strong>
+            </div>
+            <div className="statBox">
+              <span>Jami netto</span>
+              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalNetWeight, 0))}</strong>
+            </div>
+            <div className="statBox">
+              <span>Jami summa</span>
+              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalPrice, 0))}</strong>
+            </div>
+          </section>
+
+          <section className="sheet">
+            <div className="listHead">
+              <h2>Moshinalar ro'yxati</h2>
+              <div className="pager">
+                <button
+                  type="button"
+                  className="pageBtn"
+                  onClick={() => setVehiclePage((p) => Math.max(p - 1, 1))}
+                  disabled={currentVehiclePage === 1}
+                  aria-label="Oldingi sahifa"
+                >
+                  <RxDoubleArrowLeft />
+                </button>
+                <span className="pageInfo">
+                  {currentVehiclePage} / {totalVehiclePages}
+                </span>
+                <button
+                  type="button"
+                  className="pageBtn"
+                  onClick={() => setVehiclePage((p) => Math.min(p + 1, totalVehiclePages))}
+                  disabled={currentVehiclePage === totalVehiclePages}
+                  aria-label="Keyingi sahifa"
+                >
+                  <RxDoubleArrowRight />
+                </button>
+              </div>
+            </div>
+
+            <div className="tableWrap">
+              <table className="dataTable">
+                <thead>
+                  <tr>
+                    <th>Moshina</th>
+                    <th>Reyslar</th>
+                    <th>Gross</th>
+                    <th>Yuk</th>
+                    <th>Netto</th>
+                    <th>Jami summa</th>
+                    <th>So'nggi sana</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedVehicles.map((item) => (
+                    <tr key={item.truck_number}>
+                      <td>{item.truck_number}</td>
+                      <td>{money(item.trips)}</td>
+                      <td>{money(item.totalGrossWeight)}</td>
+                      <td>{money(item.totalCargoWeight)}</td>
+                      <td>{money(item.totalNetWeight)}</td>
+                      <td className="totalCell">{money(item.totalPrice)}</td>
+                      <td>{item.lastDate ? new Date(item.lastDate).toLocaleDateString() : "-"}</td>
+                    </tr>
+                  ))}
+                  {paginatedVehicles.length === 0 && (
+                    <tr>
+                      <td colSpan="7" style={{ textAlign: "center", padding: 20 }}>
+                        Hech qanday moshina topilmadi
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )}
+
       {activeSection === "ombor" && (
         <>
           <section className="statsRow omborStats">
@@ -868,6 +1057,7 @@ export default function App() {
           </section>
         </>
       )}
+      </main>
     </div>
   );
 }

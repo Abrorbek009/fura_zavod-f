@@ -444,27 +444,29 @@ export default function App() {
           <p>Temir Zavod</p>
           <strong>Bo'limlar</strong>
         </div>
-        <button
-          type="button"
-          className={activeSection === "transport" ? "sideBtn sideBtnActive" : "sideBtn"}
-          onClick={() => setActiveSection("transport")}
-        >
-          Kirim
-        </button>
-        <button
-          type="button"
-          className={activeSection === "vehicles" ? "sideBtn sideBtnActive" : "sideBtn"}
-          onClick={() => setActiveSection("vehicles")}
-        >
-          Moshinalar
-        </button>
-        <button
-          type="button"
-          className={activeSection === "ombor" ? "sideBtn sideBtnActive" : "sideBtn"}
-          onClick={() => setActiveSection("ombor")}
-        >
-          Ombor
-        </button>
+        <div className="sideNav">
+          <button
+            type="button"
+            className={activeSection === "transport" ? "sideBtn sideBtnActive" : "sideBtn"}
+            onClick={() => setActiveSection("transport")}
+          >
+            Kirim
+          </button>
+          <button
+            type="button"
+            className={activeSection === "vehicles" ? "sideBtn sideBtnActive" : "sideBtn"}
+            onClick={() => setActiveSection("vehicles")}
+          >
+            Moshinalar
+          </button>
+          <button
+            type="button"
+            className={activeSection === "ombor" ? "sideBtn sideBtnActive" : "sideBtn"}
+            onClick={() => setActiveSection("ombor")}
+          >
+            Ombor
+          </button>
+        </div>
       </aside>
 
       <main className="appMain">

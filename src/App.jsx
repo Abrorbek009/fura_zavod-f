@@ -545,13 +545,33 @@ export default function App() {
                       <button type="button" onClick={() => handleEdit(item)}>
                         Edit
                       </button>
-                      <button
-                        type="button"
-                        className="danger"
-                        onClick={() => requestDeleteTransport(item)}
-                      >
-                        Delete
-                      </button>
+                      {deleteTarget?.kind === "transport" &&
+                      deleteTarget.id === item._id ? (
+                        <>
+                          <button
+                            type="button"
+                            className="secondary rowConfirmBtn"
+                            onClick={() => setDeleteTarget(null)}
+                          >
+                            Yo'q
+                          </button>
+                          <button
+                            type="button"
+                            className="danger rowConfirmBtn"
+                            onClick={confirmDelete}
+                          >
+                            Ha
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          className="danger"
+                          onClick={() => requestDeleteTransport(item)}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -752,9 +772,32 @@ export default function App() {
                           <button type="button" onClick={() => handleOmborEdit(item)}>
                             Edit
                           </button>
-                          <button type="button" onClick={() => requestDeleteOmbor(item)}>
-                            Delete
-                          </button>
+                          {deleteTarget?.kind === "ombor" &&
+                          deleteTarget.id === item.id ? (
+                            <>
+                              <button
+                                type="button"
+                                className="secondary rowConfirmBtn"
+                                onClick={() => setDeleteTarget(null)}
+                              >
+                                Yo'q
+                              </button>
+                              <button
+                                type="button"
+                                className="danger rowConfirmBtn"
+                                onClick={confirmDelete}
+                              >
+                                Ha
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => requestDeleteOmbor(item)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -763,44 +806,6 @@ export default function App() {
             </div>
           </section>
         </>
-      )}
-      {deleteTarget && (
-        <div
-          className="modalOverlay"
-          role="presentation"
-          onClick={() => setDeleteTarget(null)}
-        >
-          <div
-            className="modalCard"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="delete-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="modalBadge">Tasdiqlash</p>
-            <h2 id="delete-title">O'chirishni tasdiqlaysizmi?</h2>
-            <p className="modalText">
-              <strong>{deleteTarget.title}</strong> yozuvi o'chiriladi. Bu amalni
-              qaytarib bo'lmaydi.
-            </p>
-            <div className="modalActions">
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => setDeleteTarget(null)}
-              >
-                Yo'q
-              </button>
-              <button
-                type="button"
-                className="danger modalDanger"
-                onClick={confirmDelete}
-              >
-                Ha, o'chir
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

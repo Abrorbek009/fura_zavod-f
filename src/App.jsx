@@ -5,15 +5,15 @@ import Login from "./Login.jsx";
 const API_URL =
   import.meta.env.VITE_API_URL || "https://fura-zavod-b-vhpt.vercel.app";
 
-function getCurrentLocalDateTime() {
+function getCurrentLocalDateValue() {
   const now = new Date();
   const offset = now.getTimezoneOffset();
   const local = new Date(now.getTime() - offset * 60000);
-  return local.toISOString().slice(0, 16);
+  return local.toISOString().slice(0, 10);
 }
 
 const emptyForm = {
-  transport_date: getCurrentLocalDateTime(),
+  transport_date: getCurrentLocalDateValue(),
   truck_number: "",
   gross_weight_kg: "",
   tare_weight_kg: "",
@@ -22,7 +22,7 @@ const emptyForm = {
 };
 
 const omborEmptyForm = {
-  stock_date: getCurrentLocalDateTime(),
+  stock_date: getCurrentLocalDateValue(),
   product_name: "",
   incoming_kg: "",
   outgoing_kg: "",
@@ -30,7 +30,7 @@ const omborEmptyForm = {
 };
 
 const vehicleEmptyForm = {
-  vehicle_date: getCurrentLocalDateTime(),
+  vehicle_date: getCurrentLocalDateValue(),
   owner_name: "",
   owner_phone: "",
   truck_number: "",
@@ -40,7 +40,12 @@ function toLocalInputValue(value) {
   const d = value ? new Date(value) : new Date();
   const offset = d.getTimezoneOffset();
   const local = new Date(d.getTime() - offset * 60000);
-  return local.toISOString().slice(0, 16);
+  return local.toISOString().slice(0, 10);
+}
+
+function toIsoFromDateInput(value) {
+  if (!value) return new Date().toISOString();
+  return new Date(`${value}T12:00:00`).toISOString();
 }
 
 function money(value) {
@@ -241,7 +246,7 @@ export default function App() {
     setEditingId(null);
     setForm({
       ...emptyForm,
-      transport_date: getCurrentLocalDateTime(),
+      transport_date: getCurrentLocalDateValue(),
     });
   }
 
@@ -249,7 +254,7 @@ export default function App() {
     setOmborEditingId(null);
     setOmborForm({
       ...omborEmptyForm,
-      stock_date: getCurrentLocalDateTime(),
+      stock_date: getCurrentLocalDateValue(),
     });
   }
 
@@ -257,7 +262,7 @@ export default function App() {
     setVehicleEditingId(null);
     setVehicleForm({
       ...vehicleEmptyForm,
-      vehicle_date: getCurrentLocalDateTime(),
+      vehicle_date: getCurrentLocalDateValue(),
     });
   }
 
@@ -280,7 +285,7 @@ export default function App() {
     try {
       const payload = {
         ...form,
-        transport_date: new Date(form.transport_date).toISOString(),
+        transport_date: toIsoFromDateInput(form.transport_date),
         gross_weight_kg: Number(form.gross_weight_kg),
         tare_weight_kg: Number(form.tare_weight_kg),
         cargo_weight_kg: cargoWeight,
@@ -382,7 +387,7 @@ export default function App() {
     setSaving(true);
     try {
       const payload = {
-        vehicle_date: new Date(vehicleForm.vehicle_date).toISOString(),
+        vehicle_date: toIsoFromDateInput(vehicleForm.vehicle_date),
         owner_name: vehicleForm.owner_name.trim(),
         owner_phone: vehicleForm.owner_phone.trim(),
         truck_number: vehicleForm.truck_number.trim(),
@@ -462,7 +467,7 @@ export default function App() {
     setSaving(true);
     try {
       const payload = {
-        stock_date: new Date(omborForm.stock_date).toISOString(),
+        stock_date: toIsoFromDateInput(omborForm.stock_date),
         product_name: omborForm.product_name.trim(),
         incoming_kg: Number(omborForm.incoming_kg),
         outgoing_kg: Number(omborForm.outgoing_kg),
@@ -652,7 +657,7 @@ export default function App() {
 
           <div className="gridBody">
             <input
-              type="datetime-local"
+              type="date"
               value={form.transport_date}
               onChange={(e) =>
                 setForm((p) => ({ ...p, transport_date: e.target.value }))
@@ -857,7 +862,7 @@ export default function App() {
 
               <div className="gridBody vehicleGridBody">
                 <input
-                  type="datetime-local"
+                  type="date"
                   value={vehicleForm.vehicle_date}
                   onChange={(e) =>
                     setVehicleForm((p) => ({ ...p, vehicle_date: e.target.value }))
@@ -1056,7 +1061,7 @@ export default function App() {
 
               <div className="gridBody omborGridBody">
                 <input
-                  type="datetime-local"
+                  type="date"
                   value={omborForm.stock_date}
                   onChange={(e) =>
                     setOmborForm((p) => ({ ...p, stock_date: e.target.value }))

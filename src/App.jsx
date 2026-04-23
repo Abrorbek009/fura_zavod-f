@@ -711,7 +711,6 @@ export default function App() {
               {transportVehicleOptions.map((vehicle) => (
                 <option key={vehicle._id} value={vehicle.truck_number}>
                   {vehicle.truck_number}
-                  {vehicle.owner_name ? ` - ${vehicle.owner_name}` : ""}
                 </option>
               ))}
             </select>

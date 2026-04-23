@@ -29,6 +29,13 @@ const omborEmptyForm = {
   unit_price: "",
 };
 
+const vehicleEmptyForm = {
+  vehicle_date: getCurrentLocalDateTime(),
+  owner_name: "",
+  owner_phone: "",
+  truck_number: "",
+};
+
 function toLocalInputValue(value) {
   const d = value ? new Date(value) : new Date();
   const offset = d.getTimezoneOffset();
@@ -54,6 +61,7 @@ export default function App() {
   );
   const [items, setItems] = useState([]);
   const [omborItems, setOmborItems] = useState([]);
+  const [vehicleItems, setVehicleItems] = useState([]);
   const [stats, setStats] = useState({
     totalTrips: 0,
     totalGrossWeight: 0,
@@ -70,6 +78,9 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [form, setForm] = useState(emptyForm);
   const [omborForm, setOmborForm] = useState(omborEmptyForm);
+  const [vehicleForm, setVehicleForm] = useState(vehicleEmptyForm);
+  const [vehicleEditingId, setVehicleEditingId] = useState(null);
+  const [vehicleSearch, setVehicleSearch] = useState("");
   const [omborEditingId, setOmborEditingId] = useState(null);
   const [omborSearch, setOmborSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -150,9 +161,21 @@ export default function App() {
     }
   }
 
+  async function loadVehicleData() {
+    setLoading(true);
+    try {
+      const vehicleRes = await fetch(`${API_URL}/api/vehicles`);
+      setVehicleItems(await vehicleRes.json());
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    if (isAuthed && (activeSection === "transport" || activeSection === "vehicles")) {
+    if (isAuthed && activeSection === "transport") {
       loadData();
+    } else if (isAuthed && activeSection === "vehicles") {
+      loadVehicleData();
     } else if (isAuthed && activeSection === "ombor") {
       loadOmborData();
     }
@@ -168,39 +191,15 @@ export default function App() {
     );
   }, [items, search]);
 
-  const vehicleRows = useMemo(() => {
-    const map = new Map();
-
-    for (const item of items) {
-      const truck = String(item.truck_number || "").trim();
-      if (!truck) continue;
-
-      const current = map.get(truck) || {
-        truck_number: truck,
-        trips: 0,
-        totalGrossWeight: 0,
-        totalCargoWeight: 0,
-        totalNetWeight: 0,
-        totalPrice: 0,
-        lastDate: null,
-      };
-
-      const transportDate = item.transport_date ? new Date(item.transport_date) : null;
-
-      current.trips += 1;
-      current.totalGrossWeight += Number(item.gross_weight_kg || 0);
-      current.totalCargoWeight += Number(item.cargo_weight_kg || 0);
-      current.totalNetWeight += Number(item.net_weight_kg || 0);
-      current.totalPrice += Number(item.total_price || 0);
-      if (!current.lastDate || (transportDate && transportDate > current.lastDate)) {
-        current.lastDate = transportDate;
-      }
-
-      map.set(truck, current);
-    }
-
-    return Array.from(map.values()).sort((a, b) => b.trips - a.trips);
-  }, [items]);
+  const filteredVehicleItems = useMemo(() => {
+    const q = vehicleSearch.trim().toLowerCase();
+    if (!q) return vehicleItems;
+    return vehicleItems.filter((item) =>
+      [item.owner_name, item.owner_phone, item.truck_number]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q))
+    );
+  }, [vehicleItems, vehicleSearch]);
 
   const filteredOmborItems = useMemo(() => {
     const q = omborSearch.trim().toLowerCase();
@@ -212,9 +211,9 @@ export default function App() {
     );
   }, [omborItems, omborSearch]);
 
-  const totalVehiclePages = Math.max(Math.ceil(vehicleRows.length / pageSize), 1);
+  const totalVehiclePages = Math.max(Math.ceil(filteredVehicleItems.length / pageSize), 1);
   const currentVehiclePage = Math.min(vehiclePage, totalVehiclePages);
-  const paginatedVehicles = vehicleRows.slice(
+  const paginatedVehicles = filteredVehicleItems.slice(
     (currentVehiclePage - 1) * pageSize,
     currentVehiclePage * pageSize
   );
@@ -225,7 +224,7 @@ export default function App() {
 
   useEffect(() => {
     setVehiclePage(1);
-  }, [items.length]);
+  }, [vehicleItems.length, vehicleSearch]);
 
   useEffect(() => {
     setOmborPage(1);
@@ -251,6 +250,14 @@ export default function App() {
     setOmborForm({
       ...omborEmptyForm,
       stock_date: getCurrentLocalDateTime(),
+    });
+  }
+
+  function resetVehicleForm() {
+    setVehicleEditingId(null);
+    setVehicleForm({
+      ...vehicleEmptyForm,
+      vehicle_date: getCurrentLocalDateTime(),
     });
   }
 
@@ -359,6 +366,78 @@ export default function App() {
     });
   }
 
+  function handleVehicleEdit(item) {
+    setVehicleEditingId(item._id);
+    setVehicleForm({
+      vehicle_date: toLocalInputValue(item.vehicle_date),
+      owner_name: item.owner_name || "",
+      owner_phone: item.owner_phone || "",
+      truck_number: item.truck_number || "",
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleVehicleSubmit(e) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        vehicle_date: new Date(vehicleForm.vehicle_date).toISOString(),
+        owner_name: vehicleForm.owner_name.trim(),
+        owner_phone: vehicleForm.owner_phone.trim(),
+        truck_number: vehicleForm.truck_number.trim(),
+      };
+
+      if (!payload.owner_name || !payload.owner_phone || !payload.truck_number) {
+        alert("Egasining ismi, telefon va moshina raqami kerak");
+        return;
+      }
+
+      const url = vehicleEditingId
+        ? `${API_URL}/api/vehicles/${vehicleEditingId}`
+        : `${API_URL}/api/vehicles`;
+      const method = vehicleEditingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Save failed");
+      }
+
+      resetVehicleForm();
+      await loadVehicleData();
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleVehicleDelete(id) {
+    const response = await fetch(`${API_URL}/api/vehicles/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      alert(error.message || "Delete failed");
+      return;
+    }
+    await loadVehicleData();
+  }
+
+  function requestDeleteVehicle(item) {
+    setDeleteTarget({
+      kind: "vehicle",
+      id: item._id,
+      title: item.truck_number || "Tanlangan moshina",
+    });
+  }
+
   async function confirmDelete() {
     if (!deleteTarget) return;
 
@@ -367,6 +446,11 @@ export default function App() {
 
     if (currentTarget.kind === "transport") {
       await handleDelete(currentTarget.id);
+      return;
+    }
+
+    if (currentTarget.kind === "vehicle") {
+      await handleVehicleDelete(currentTarget.id);
       return;
     }
 
@@ -419,10 +503,14 @@ export default function App() {
     localStorage.removeItem("temir_auth");
     setIsAuthed(false);
     setItems([]);
+    setVehicleItems([]);
     setOmborItems([]);
     setSearch("");
     setEditingId(null);
     setForm(emptyForm);
+    setVehicleSearch("");
+    setVehicleEditingId(null);
+    setVehicleForm(vehicleEmptyForm);
     setActiveSection("transport");
   };
 
@@ -484,7 +572,7 @@ export default function App() {
             {activeSection === "transport"
               ? "Sana, fura raqami, yuk vazni va bir kilo narx bo'yicha kirim yuritish."
               : activeSection === "vehicles"
-                ? "Barcha moshinalar bo'yicha yig'ma ma'lumotlar."
+                ? "Egasining ismi, telefon raqami va moshina raqamini saqlash."
                 : "Ombor kirim/chiqim jurnalini yuritish."}
           </p>
         </div>
@@ -495,7 +583,7 @@ export default function App() {
             </button>
           )}
           {activeSection === "vehicles" && (
-            <button className="refreshBtn" onClick={loadData} type="button">
+            <button className="refreshBtn" onClick={loadVehicleData} type="button">
               Yangilash
             </button>
           )}
@@ -748,31 +836,77 @@ export default function App() {
 
       {activeSection === "vehicles" && (
         <>
-          <section className="statsRow vehiclesStats">
-            <div className="statBox">
-              <span>Jami moshina</span>
-              <strong>{vehicleRows.length}</strong>
+          <section className="sheet">
+            <div className="sheetHead">
+              <h2>{vehicleEditingId ? "Moshinani tahrirlash" : "Yangi moshina"}</h2>
+              <input
+                className="search"
+                placeholder="Qidirish: egasi, telefon yoki raqam..."
+                value={vehicleSearch}
+                onChange={(e) => setVehicleSearch(e.target.value)}
+              />
             </div>
-            <div className="statBox">
-              <span>Jami reys</span>
-              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.trips, 0))}</strong>
-            </div>
-            <div className="statBox">
-              <span>Jami gross</span>
-              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalGrossWeight, 0))}</strong>
-            </div>
-            <div className="statBox">
-              <span>Jami yuk</span>
-              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalCargoWeight, 0))}</strong>
-            </div>
-            <div className="statBox">
-              <span>Jami netto</span>
-              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalNetWeight, 0))}</strong>
-            </div>
-            <div className="statBox">
-              <span>Jami summa</span>
-              <strong>{money(vehicleRows.reduce((sum, item) => sum + item.totalPrice, 0))}</strong>
-            </div>
+
+            <form onSubmit={handleVehicleSubmit}>
+              <div className="gridHeader vehicleGridHeader">
+                <div>Sana</div>
+                <div>Egasining ismi</div>
+                <div>Telefon raqami</div>
+                <div>Mashina raqami</div>
+              </div>
+
+              <div className="gridBody vehicleGridBody">
+                <input
+                  type="datetime-local"
+                  value={vehicleForm.vehicle_date}
+                  onChange={(e) =>
+                    setVehicleForm((p) => ({ ...p, vehicle_date: e.target.value }))
+                  }
+                />
+                <input
+                  value={vehicleForm.owner_name}
+                  onChange={(e) =>
+                    setVehicleForm((p) => ({ ...p, owner_name: e.target.value }))
+                  }
+                  placeholder="Ism Familiya"
+                  required
+                />
+                <input
+                  value={vehicleForm.owner_phone}
+                  onChange={(e) =>
+                    setVehicleForm((p) => ({ ...p, owner_phone: e.target.value }))
+                  }
+                  placeholder="+998 90 123 45 67"
+                  required
+                />
+                <input
+                  value={vehicleForm.truck_number}
+                  onChange={(e) =>
+                    setVehicleForm((p) => ({ ...p, truck_number: e.target.value }))
+                  }
+                  placeholder="50U109DB"
+                  required
+                />
+              </div>
+
+              <div className="calcRow">
+                <div className="calcBox">
+                  <span>Jami moshina</span>
+                  <strong>{filteredVehicleItems.length}</strong>
+                </div>
+
+                <div className="actions">
+                  <button className="primary" type="submit" disabled={saving}>
+                    {saving ? "Saqlanmoqda..." : vehicleEditingId ? "Yangilash" : "Saqlash"}
+                  </button>
+                  {vehicleEditingId && (
+                    <button type="button" className="secondary" onClick={resetVehicleForm}>
+                      Bekor qilish
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
           </section>
 
           <section className="sheet">
@@ -807,30 +941,57 @@ export default function App() {
               <table className="dataTable">
                 <thead>
                   <tr>
-                    <th>Moshina</th>
-                    <th>Reyslar</th>
-                    <th>Gross</th>
-                    <th>Yuk</th>
-                    <th>Netto</th>
-                    <th>Jami summa</th>
-                    <th>So'nggi sana</th>
+                    <th>Sana</th>
+                    <th>Egasining ismi</th>
+                    <th>Telefon raqami</th>
+                    <th>Mashina raqami</th>
+                    <th>Amal</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedVehicles.map((item) => (
-                    <tr key={item.truck_number}>
-                      <td>{item.truck_number}</td>
-                      <td>{money(item.trips)}</td>
-                      <td>{money(item.totalGrossWeight)}</td>
-                      <td>{money(item.totalCargoWeight)}</td>
-                      <td>{money(item.totalNetWeight)}</td>
-                      <td className="totalCell">{money(item.totalPrice)}</td>
-                      <td>{item.lastDate ? new Date(item.lastDate).toLocaleDateString() : "-"}</td>
+                    <tr key={item._id}>
+                      <td>{new Date(item.vehicle_date).toLocaleDateString()}</td>
+                      <td>{item.owner_name}</td>
+                      <td>{item.owner_phone}</td>
+                      <td className="totalCell">{item.truck_number}</td>
+                      <td className="rowActions">
+                        <button type="button" onClick={() => handleVehicleEdit(item)}>
+                          Edit
+                        </button>
+                        {deleteTarget?.kind === "vehicle" &&
+                        deleteTarget.id === item._id ? (
+                          <>
+                            <button
+                              type="button"
+                              className="secondary rowConfirmBtn"
+                              onClick={() => setDeleteTarget(null)}
+                            >
+                              Yo'q
+                            </button>
+                            <button
+                              type="button"
+                              className="danger rowConfirmBtn"
+                              onClick={confirmDelete}
+                            >
+                              Ha
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="danger"
+                            onClick={() => requestDeleteVehicle(item)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {paginatedVehicles.length === 0 && (
                     <tr>
-                      <td colSpan="7" style={{ textAlign: "center", padding: 20 }}>
+                      <td colSpan="5" style={{ textAlign: "center", padding: 20 }}>
                         Hech qanday moshina topilmadi
                       </td>
                     </tr>

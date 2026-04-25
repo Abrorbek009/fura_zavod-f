@@ -503,43 +503,12 @@ input {
 
 .loginPage {
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
   padding: 32px;
   background:
-    radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.22), transparent 26%),
-    radial-gradient(circle at 85% 18%, rgba(249, 115, 22, 0.2), transparent 24%),
-    linear-gradient(135deg, #0f172a 0%, #172554 48%, #1e293b 100%);
-}
-
-.loginGlow {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(20px);
-  opacity: 0.45;
-  animation: loginFloat 10s ease-in-out infinite;
-}
-
-.loginGlowOne {
-  top: 8%;
-  left: 5%;
-  width: 280px;
-  height: 280px;
-  background: rgba(56, 189, 248, 0.32);
-}
-
-.loginGlowTwo {
-  right: 8%;
-  bottom: 12%;
-  width: 360px;
-  height: 360px;
-  background: rgba(249, 115, 22, 0.22);
-  animation-delay: -3s;
+    linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
 }
 
 .loginShell {
-  position: relative;
-  z-index: 1;
   min-height: calc(100vh - 64px);
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(360px, 460px);
@@ -548,7 +517,7 @@ input {
 }
 
 .loginHero {
-  color: #e2e8f0;
+  color: #0f172a;
   padding: 28px 18px;
   animation: loginFadeUp 0.75s ease;
 }
@@ -566,7 +535,7 @@ input {
   max-width: 560px;
   font-size: 18px;
   line-height: 1.6;
-  color: rgba(226, 232, 240, 0.82);
+  color: #475569;
 }
 
 .loginFeatureList {
@@ -578,11 +547,10 @@ input {
 
 .loginFeature {
   padding: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid #d9e2ec;
   border-radius: 20px;
-  background: rgba(15, 23, 42, 0.34);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
   animation: loginFadeUp 0.9s ease;
 }
 
@@ -590,26 +558,22 @@ input {
   display: block;
   margin-bottom: 8px;
   font-size: 16px;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .loginFeature span {
   font-size: 14px;
   line-height: 1.55;
-  color: rgba(226, 232, 240, 0.74);
+  color: #64748b;
 }
 
 .loginCard {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  padding: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(241, 245, 249, 0.92) 100%);
-  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(18px);
+  padding: 32px;
+  border: 1px solid #d8e1eb;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.12);
   animation: loginFadeUp 0.7s ease;
 }
 
@@ -617,9 +581,9 @@ input {
   display: inline-flex;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.14);
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  color: #f8fafc;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  color: #0c4a6e;
   font-weight: 700;
   margin-bottom: 16px;
   letter-spacing: 0.04em;
@@ -731,29 +695,6 @@ input {
   font-size: 14px;
 }
 
-.loginTicker {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 18px;
-  display: flex;
-  gap: 28px;
-  white-space: nowrap;
-  color: rgba(226, 232, 240, 0.28);
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  animation: loginTickerMove 18s linear infinite;
-}
-
-.loginTickerAlt {
-  bottom: 48px;
-  animation-duration: 24s;
-  animation-direction: reverse;
-  color: rgba(191, 219, 254, 0.22);
-}
-
 @keyframes loginFadeUp {
   from {
     opacity: 0;
@@ -762,25 +703,6 @@ input {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes loginFloat {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(0, -18px, 0) scale(1.04);
-  }
-}
-
-@keyframes loginTickerMove {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-20%);
   }
 }
 
@@ -859,10 +781,5 @@ input {
 
   .loginCardTop {
     flex-direction: column;
-  }
-
-  .loginTicker,
-  .loginTickerAlt {
-    display: none;
   }
 }

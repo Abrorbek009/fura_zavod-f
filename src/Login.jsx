@@ -39,9 +39,6 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="loginPage">
-      <div className="loginGlow loginGlowOne" />
-      <div className="loginGlow loginGlowTwo" />
-
       <div className="loginShell">
         <section className="loginHero">
           <div className="loginBadge">Temir Zavod</div>
@@ -110,26 +107,6 @@ export default function Login({ onLogin }) {
             Demo kirish: <strong>admin / 123456</strong> yoki <strong>ombor / 123456</strong>
           </div>
         </section>
-      </div>
-      <div className="loginTicker">
-        <span>Transport</span>
-        <span>Moshinalar</span>
-        <span>Ombor</span>
-        <span>Hisob-kitob</span>
-        <span>Transport</span>
-        <span>Moshinalar</span>
-        <span>Ombor</span>
-        <span>Hisob-kitob</span>
-      </div>
-      <div className="loginTicker loginTickerAlt">
-        <span>Temir Zavod</span>
-        <span>Kirim nazorati</span>
-        <span>Mahsulot ro'yxati</span>
-        <span>Tez ishlash</span>
-        <span>Temir Zavod</span>
-        <span>Kirim nazorati</span>
-        <span>Mahsulot ro'yxati</span>
-        <span>Tez ishlash</span>
       </div>
     </div>
   );

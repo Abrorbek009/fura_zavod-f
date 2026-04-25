@@ -1258,7 +1258,7 @@ export default function App() {
                     <th>Chiqim</th>
                     <th>Qoldiq</th>
                     <th>1 kg narx</th>
-                    <th>Jami</th>
+                    <th>Jami narx</th>
                     <th>Amal</th>
                   </tr>
                 </thead>
@@ -1274,7 +1274,7 @@ export default function App() {
                         <td className="highlight">{money(Math.max(Number(item.incoming_kg || 0) - Number(item.outgoing_kg || 0), 0))}</td>
                         <td>{money(item.unit_price)}</td>
                         <td className="totalCell">
-                          {money(Math.max(Number(item.incoming_kg || 0) - Number(item.outgoing_kg || 0), 0) * Number(item.unit_price || 0))}
+                          {money(Math.max(Number(item.incoming_kg || 0) - Number(item.outgoing_kg || 0), 0) * Number(item.unit_price || 0))} so'm
                         </td>
                         <td className="rowActions">
                           <button type="button" onClick={() => handleOmborEdit(item)}>

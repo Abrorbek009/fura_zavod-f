@@ -39,40 +39,97 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="loginPage">
-      <div className="loginCard">
-        <div className="loginBadge">Temir Zavod</div>
-        <h1>Kirish</h1>
-        <p>Transport kirim dasturiga kirish uchun login qiling.</p>
+      <div className="loginGlow loginGlowOne" />
+      <div className="loginGlow loginGlowTwo" />
 
-        <form onSubmit={handleSubmit} className="loginForm">
-          <label>
-            Login
-            <input
-              value={login}
-              onChange={(e) => setLogin(e.target.value)}
-              placeholder="Login"
-            />
-          </label>
-          <label>
-            Parol
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Parol"
-            />
-          </label>
+      <div className="loginShell">
+        <section className="loginHero">
+          <div className="loginBadge">Temir Zavod</div>
+          <h1>Transport va ombor boshqaruvi bir joyda.</h1>
+          <p className="loginLead">
+            Kirim yozuvlari, moshinalar va ombor mahsulotlarini bitta paneldan yuritish
+            uchun tizimga kiring.
+          </p>
 
-          {error && <div className="loginError">{error}</div>}
+          <div className="loginFeatureList">
+            <div className="loginFeature">
+              <strong>Moshinalar</strong>
+              <span>Egasi, telefon va raqam bo'yicha alohida ro'yxat.</span>
+            </div>
+            <div className="loginFeature">
+              <strong>Kirim</strong>
+              <span>Moshina va mahsulot tanlab tez yozuv kiritish.</span>
+            </div>
+            <div className="loginFeature">
+              <strong>Ombor</strong>
+              <span>Mahsulot qoldig'i va jami narxni nazorat qilish.</span>
+            </div>
+          </div>
+        </section>
 
-          <button className="loginBtn" type="submit" disabled={loading}>
-            {loading ? "Tekshirilmoqda..." : "Kirish"}
-          </button>
-        </form>
+        <section className="loginCard">
+          <div className="loginCardTop">
+            <div>
+              <div className="loginEyebrow">Kirish</div>
+              <h2>Tizimga kiring</h2>
+            </div>
+            <div className="loginStatus">Online</div>
+          </div>
 
-        <div className="loginHint">
-          Demo kirish: <strong>admin / 123456</strong> yoki <strong>ombor / 123456</strong>
-        </div>
+          <p className="loginCardText">
+            Login va parol orqali kerakli bo'limga o'ting.
+          </p>
+
+          <form onSubmit={handleSubmit} className="loginForm">
+            <label>
+              Login
+              <input
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
+                placeholder="admin yoki ombor"
+              />
+            </label>
+            <label>
+              Parol
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Parol"
+              />
+            </label>
+
+            {error && <div className="loginError">{error}</div>}
+
+            <button className="loginBtn" type="submit" disabled={loading}>
+              {loading ? "Tekshirilmoqda..." : "Kirish"}
+            </button>
+          </form>
+
+          <div className="loginHint">
+            Demo kirish: <strong>admin / 123456</strong> yoki <strong>ombor / 123456</strong>
+          </div>
+        </section>
+      </div>
+      <div className="loginTicker">
+        <span>Transport</span>
+        <span>Moshinalar</span>
+        <span>Ombor</span>
+        <span>Hisob-kitob</span>
+        <span>Transport</span>
+        <span>Moshinalar</span>
+        <span>Ombor</span>
+        <span>Hisob-kitob</span>
+      </div>
+      <div className="loginTicker loginTickerAlt">
+        <span>Temir Zavod</span>
+        <span>Kirim nazorati</span>
+        <span>Mahsulot ro'yxati</span>
+        <span>Tez ishlash</span>
+        <span>Temir Zavod</span>
+        <span>Kirim nazorati</span>
+        <span>Mahsulot ro'yxati</span>
+        <span>Tez ishlash</span>
       </div>
     </div>
   );

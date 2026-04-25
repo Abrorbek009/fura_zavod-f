@@ -39,72 +39,75 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="loginPage">
+      <div className="loginAmbient loginAmbientOne" />
+      <div className="loginAmbient loginAmbientTwo" />
+
       <div className="loginShell">
-        <section className="loginHero">
-          <div className="loginBadge">Temir Zavod</div>
-          <h1>Transport va ombor boshqaruvi bir joyda.</h1>
-          <p className="loginLead">
-            Kirim yozuvlari, moshinalar va ombor mahsulotlarini bitta paneldan yuritish
-            uchun tizimga kiring.
-          </p>
+        <section className="loginCard loginCardCenter">
+          <div className="loginOrbit loginOrbitOne" />
+          <div className="loginOrbit loginOrbitTwo" />
 
-          <div className="loginFeatureList">
-            <div className="loginFeature">
-              <strong>Moshinalar</strong>
-              <span>Egasi, telefon va raqam bo'yicha alohida ro'yxat.</span>
+          <div className="loginCardBody">
+            <div className="loginBadge">Temir Zavod</div>
+
+            <div className="loginHero loginHeroCenter">
+              <div className="loginCardTop">
+                <div>
+                  <div className="loginEyebrow">Kirish</div>
+                  <h1>Transport va ombor boshqaruvi.</h1>
+                </div>
+                <div className="loginStatus">Online</div>
+              </div>
+
+              <p className="loginLead">
+                Tizimga kirib kirim yozuvlari, moshinalar va ombor mahsulotlarini bitta joydan boshqaring.
+              </p>
             </div>
-            <div className="loginFeature">
-              <strong>Kirim</strong>
-              <span>Moshina va mahsulot tanlab tez yozuv kiritish.</span>
+
+            <div className="loginFeatureList loginFeatureListCenter">
+              <div className="loginFeature">
+                <strong>Moshinalar</strong>
+                <span>Raqam, egasi va telefon bo'yicha tez ro'yxat.</span>
+              </div>
+              <div className="loginFeature">
+                <strong>Kirim</strong>
+                <span>Moshina va mahsulot tanlab yozuv kiritish.</span>
+              </div>
+              <div className="loginFeature">
+                <strong>Ombor</strong>
+                <span>Qoldiq va jami narx bo'yicha nazorat.</span>
+              </div>
             </div>
-            <div className="loginFeature">
-              <strong>Ombor</strong>
-              <span>Mahsulot qoldig'i va jami narxni nazorat qilish.</span>
+
+            <form onSubmit={handleSubmit} className="loginForm">
+              <label>
+                Login
+                <input
+                  value={login}
+                  onChange={(e) => setLogin(e.target.value)}
+                  placeholder="admin yoki ombor"
+                />
+              </label>
+              <label>
+                Parol
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Parol"
+                />
+              </label>
+
+              {error && <div className="loginError">{error}</div>}
+
+              <button className="loginBtn" type="submit" disabled={loading}>
+                {loading ? "Tekshirilmoqda..." : "Kirish"}
+              </button>
+            </form>
+
+            <div className="loginHint">
+              Demo kirish: <strong>admin / 123456</strong> yoki <strong>ombor / 123456</strong>
             </div>
-          </div>
-        </section>
-
-        <section className="loginCard">
-          <div className="loginCardTop">
-            <div>
-              <div className="loginEyebrow">Kirish</div>
-              <h2>Tizimga kiring</h2>
-            </div>
-            <div className="loginStatus">Online</div>
-          </div>
-
-          <p className="loginCardText">
-            Login va parol orqali kerakli bo'limga o'ting.
-          </p>
-
-          <form onSubmit={handleSubmit} className="loginForm">
-            <label>
-              Login
-              <input
-                value={login}
-                onChange={(e) => setLogin(e.target.value)}
-                placeholder="admin yoki ombor"
-              />
-            </label>
-            <label>
-              Parol
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Parol"
-              />
-            </label>
-
-            {error && <div className="loginError">{error}</div>}
-
-            <button className="loginBtn" type="submit" disabled={loading}>
-              {loading ? "Tekshirilmoqda..." : "Kirish"}
-            </button>
-          </form>
-
-          <div className="loginHint">
-            Demo kirish: <strong>admin / 123456</strong> yoki <strong>ombor / 123456</strong>
           </div>
         </section>
       </div>

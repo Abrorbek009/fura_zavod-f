@@ -554,7 +554,7 @@ input {
 .loginHero h1,
 .loginCard h1 {
   margin: 0 0 14px;
-  font-size: clamp(30px, 4vw, 48px);
+  font-size: clamp(34px, 4.6vw, 58px);
   line-height: 0.98;
   letter-spacing: -0.04em;
 }
@@ -562,7 +562,7 @@ input {
 .loginLead {
   margin: 0 0 26px;
   max-width: 700px;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.6;
   color: rgba(226, 232, 240, 0.8);
 }
@@ -570,12 +570,12 @@ input {
 .loginFeatureList {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
   max-width: 760px;
 }
 
 .loginFeature {
-  padding: 15px;
+  padding: 18px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 20px;
   background: rgba(15, 23, 42, 0.26);
@@ -599,9 +599,9 @@ input {
 
 .loginCard {
   width: 100%;
-  padding: 26px;
+  padding: 34px;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 28px;
+  border-radius: 34px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(241, 245, 249, 0.93) 100%);
   box-shadow: 0 28px 80px rgba(2, 6, 23, 0.34);
@@ -611,7 +611,7 @@ input {
 
 .loginCardCenter {
   position: relative;
-  max-width: 860px;
+  max-width: 980px;
   overflow: hidden;
 }
 
@@ -660,7 +660,7 @@ input {
 
 .loginCard h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 34px;
   line-height: 1.05;
   letter-spacing: -0.03em;
   color: #0f172a;
@@ -677,19 +677,19 @@ input {
 }
 
 .loginCardText {
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   color: #4b5563;
   line-height: 1.6;
 }
 
 .loginFeatureListCenter {
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 .loginForm {
   display: grid;
-  gap: 14px;
-  max-width: 460px;
+  gap: 16px;
+  max-width: 520px;
 }
 
 .loginForm label {
@@ -703,7 +703,7 @@ input {
 .loginForm input {
   border: 1px solid #cbd5e1;
   border-radius: 16px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   outline: none;
   background: rgba(255, 255, 255, 0.94);
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
@@ -746,7 +746,7 @@ input {
 }
 
 .loginHint {
-  margin-top: 14px;
+  margin-top: 18px;
   color: #64748b;
   font-size: 14px;
 }
@@ -865,11 +865,11 @@ input {
   }
 
   .loginCard h1 {
-    font-size: 34px;
+    font-size: 40px;
   }
 
   .loginCard {
-    padding: 20px;
+    padding: 22px;
   }
 
   .loginCardTop {
